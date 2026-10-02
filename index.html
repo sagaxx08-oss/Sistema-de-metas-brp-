@@ -1,0 +1,794 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BRP System • Meta + Cronometro</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+:root {
+  --bg: #0a0f1a;
+  --card: #131a2b;
+  --card2: #1a2338;
+  --border: #2a3550;
+  --green: #22e58a;
+  --green-dark: #0fb86a;
+  --purple: #a855f7;
+  --blue: #3b82f6;
+  --gold: #fbbf24;
+  --red: #ef4444;
+  --white: #f1f5f9;
+  --muted: #7d8aa5;
+}
+body {
+  font-family: 'Segoe UI', Arial, sans-serif;
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  padding: 16px;
+  padding-bottom: 100px;
+  background-image:
+    radial-gradient(circle at 15% 0%, rgba(34,229,138,0.10), transparent 40%),
+    radial-gradient(circle at 85% 10%, rgba(168,85,247,0.10), transparent 40%),
+    radial-gradient(circle at 50% 100%, rgba(59,130,246,0.08), transparent 50%);
+}
+.container { max-width: 760px; margin: 0 auto; }
+
+/* HEADER */
+.header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 16px;
+}
+.logo {
+  font-size: 22px; font-weight: 900; letter-spacing: 1px;
+  background: linear-gradient(90deg, var(--green), var(--blue));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.clock { font-size: 13px; color: var(--muted); font-weight: 600; }
+
+/* HERO CARD */
+.hero {
+  background: linear-gradient(145deg, var(--card), var(--card2));
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  padding: 24px;
+  margin-bottom: 16px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+  position: relative;
+  overflow: hidden;
+}
+.hero::before {
+  content: '';
+  position: absolute; top: -50%; right: -20%;
+  width: 300px; height: 300px;
+  background: radial-gradient(circle, rgba(34,229,138,0.15), transparent 70%);
+  pointer-events: none;
+}
+.hero-label { font-size: 12px; color: var(--green); font-weight: 800; letter-spacing: 2px; text-transform: uppercase; }
+.hero-title { font-size: 20px; margin: 6px 0 14px; font-weight: 800; }
+.hero-total {
+  font-size: 38px; font-weight: 900;
+  background: linear-gradient(90deg, var(--green), #4ade80);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 16px;
+}
+.progress-track {
+  height: 14px; background: #0a1020; border-radius: 99px;
+  overflow: hidden; border: 1px solid var(--border);
+}
+.progress-fill {
+  height: 100%; width: 0%;
+  background: linear-gradient(90deg, var(--green-dark), var(--green), var(--gold));
+  border-radius: 99px;
+  transition: width 0.5s ease;
+  box-shadow: 0 0 20px rgba(34,229,138,0.5);
+}
+.progress-info {
+  display: flex; justify-content: space-between;
+  font-size: 13px; color: var(--muted); margin-top: 8px; font-weight: 600;
+}
+
+/* STATS GRID */
+.stats {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; margin-bottom: 16px;
+}
+@media (min-width: 600px) { .stats { grid-template-columns: repeat(4, 1fr); } }
+.stat-card {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 16px; padding: 14px;
+  transition: transform 0.2s;
+}
+.stat-card:hover { transform: translateY(-2px); border-color: var(--green); }
+.stat-label { font-size: 11px; color: var(--muted); font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+.stat-value { font-size: 20px; font-weight: 900; margin-top: 4px; }
+.c-green { color: var(--green); }
+.c-gold { color: var(--gold); }
+.c-blue { color: var(--blue); }
+.c-purple { color: var(--purple); }
+
+/* SECTIONS */
+.section-title {
+  font-size: 16px; font-weight: 800; margin: 22px 0 10px;
+  display: flex; align-items: center; gap: 8px;
+}
+.section-title .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--green); box-shadow: 0 0 10px var(--green);
+}
+
+/* CARDS */
+.panel {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 18px; padding: 18px; margin-bottom: 12px;
+}
+input, select {
+  width: 100%; background: #0d1424; border: 1px solid var(--border);
+  color: var(--white); padding: 14px; border-radius: 12px;
+  margin: 6px 0; font-size: 15px; outline: none;
+  transition: border-color 0.2s;
+}
+input:focus, select:focus { border-color: var(--green); box-shadow: 0 0 0 3px rgba(34,229,138,0.15); }
+button {
+  width: 100%; padding: 14px; border: none; border-radius: 12px;
+  font-weight: 800; font-size: 15px; cursor: pointer;
+  transition: all 0.2s; margin-top: 6px;
+}
+button:active { transform: scale(0.97); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--green-dark), var(--green));
+  color: #052e16; box-shadow: 0 4px 20px rgba(34,229,138,0.3);
+}
+.btn-primary:hover { box-shadow: 0 6px 25px rgba(34,229,138,0.5); }
+.btn-secondary { background: var(--card2); color: var(--white); border: 1px solid var(--border); }
+.btn-gold { background: linear-gradient(135deg, #d97706, var(--gold)); color: #451a03; }
+.btn-danger { background: rgba(239,68,68,0.15); color: var(--red); border: 1px solid rgba(239,68,68,0.3); }
+.btn-purple { background: linear-gradient(135deg, #7c3aed, var(--purple)); color: white; box-shadow: 0 4px 20px rgba(168,85,247,0.3); }
+.btn-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 8px; }
+hr { border: none; border-top: 1px solid var(--border); margin: 16px 0; }
+.hint { font-size: 12px; color: var(--muted); margin-top: 8px; line-height: 1.5; }
+
+/* GAME TIMER */
+.timer-display {
+  text-align: center; padding: 20px 0;
+}
+.timer-time {
+  font-size: 56px; font-weight: 900; font-family: 'Courier New', monospace;
+  letter-spacing: 4px;
+  background: linear-gradient(90deg, var(--purple), var(--blue), var(--green));
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.timer-label { font-size: 13px; color: var(--muted); margin-top: 6px; font-weight: 600; }
+.timer-warning {
+  margin-top: 12px; padding: 10px; border-radius: 10px;
+  background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3);
+  color: var(--gold); font-size: 13px; font-weight: 700; display: none;
+}
+.timer-warning.show { display: block; animation: pulse 1s infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.6; } }
+
+/* JOB LIST */
+.job-list { display: grid; gap: 8px; margin-top: 10px; }
+.job-item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: #0d1424; border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+}
+.job-item-name { font-weight: 700; font-size: 14px; }
+.job-item-val { font-size: 12px; color: var(--green); font-weight: 700; }
+.job-del {
+  width: auto; padding: 6px 10px; margin: 0; font-size: 11px;
+  background: transparent; color: var(--red); border: 1px solid rgba(239,68,68,0.3);
+}
+
+/* ROUTINE */
+.routine { display: grid; gap: 6px; margin-top: 10px; }
+.routine-item {
+  display: grid; grid-template-columns: 75px 1fr auto; gap: 10px;
+  align-items: center; background: #0d1424; border: 1px solid var(--border);
+  border-radius: 10px; padding: 10px 12px; font-size: 13px;
+}
+.routine-time { color: var(--muted); font-weight: 700; font-size: 12px; }
+.routine-name { font-weight: 700; }
+.routine-pay { color: var(--green); font-size: 11px; font-weight: 700; }
+
+/* HISTORY */
+.history-list { display: grid; gap: 8px; margin-top: 10px; }
+.history-item {
+  background: #0d1424; border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px 14px;
+  animation: slideIn 0.3s ease;
+}
+@keyframes slideIn { from { opacity: 0; transform: translateY(-8px); } to { opacity: 1; transform: translateY(0); } }
+.history-top { display: flex; justify-content: space-between; margin-bottom: 4px; }
+.history-name { font-weight: 700; font-size: 14px; }
+.history-amount { font-weight: 900; color: var(--green); }
+.history-meta { font-size: 11px; color: var(--muted); }
+.empty { text-align: center; color: var(--muted); padding: 30px; font-size: 14px; }
+
+/* TABS */
+.tab-page { display: none; }
+.tab-page.active { display: block; animation: fadeIn 0.3s ease; }
+@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+/* BOTTOM NAV */
+.bottom-nav {
+  position: fixed; bottom: 0; left: 0; right: 0; z-index: 50;
+  background: rgba(10,15,26,0.95); backdrop-filter: blur(20px);
+  border-top: 1px solid var(--border); padding: 8px 6px;
+}
+.nav-inner { max-width: 760px; margin: 0 auto; display: flex; gap: 3px; overflow-x: auto; }
+.nav-btn {
+  flex: 1; min-width: 62px; background: transparent; border: none;
+  color: var(--muted); padding: 8px 4px; border-radius: 12px;
+  font-size: 9px; font-weight: 800; margin: 0; width: auto;
+  display: flex; flex-direction: column; align-items: center; gap: 2px;
+}
+.nav-btn .ico { font-size: 18px; }
+.nav-btn.active { background: rgba(34,229,138,0.12); color: var(--green); }
+
+/* TOAST */
+.toast {
+  position: fixed; bottom: 100px; left: 50%; z-index: 100;
+  transform: translateX(-50%) translateY(20px);
+  background: linear-gradient(135deg, var(--green-dark), var(--green));
+  color: #052e16; padding: 12px 22px; border-radius: 14px;
+  font-weight: 800; font-size: 14px; opacity: 0; pointer-events: none;
+  transition: all 0.3s; box-shadow: 0 10px 40px rgba(34,229,138,0.4);
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+.toast.warn { background: linear-gradient(135deg, #d97706, var(--gold)); color: #451a03; }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed; inset: 0; background: rgba(0,0,0,0.7);
+  display: none; align-items: center; justify-content: center; z-index: 200; padding: 20px;
+}
+.modal-overlay.show { display: flex; }
+.modal {
+  background: var(--card); border: 1px solid var(--border);
+  border-radius: 20px; padding: 24px; width: 100%; max-width: 400px;
+}
+.modal h3 { margin-bottom: 16px; font-size: 18px; }
+</style>
+</head>
+<body>
+<div class="container">
+  <!-- HEADER -->
+  <div class="header">
+    <div class="logo">BRP SYSTEM</div>
+    <div class="clock" id="clock">--:--</div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <div class="hero-label" id="hero-label">Bem-vindo</div>
+    <div class="hero-title" id="hero-title">Defina sua Meta</div>
+    <div class="hero-total" id="hero-total">R$ 0</div>
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-info">
+      <span id="progress-pct">0%</span>
+      <span id="meta-info">Defina abaixo</span>
+    </div>
+  </div>
+
+  <!-- STATS -->
+  <div class="stats">
+    <div class="stat-card">
+      <div class="stat-label">Banco</div>
+      <div class="stat-value c-green" id="stat-bank">R$ 0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Na Mao</div>
+      <div class="stat-value c-gold" id="stat-cash">R$ 0</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Falta</div>
+      <div class="stat-value c-blue" id="stat-missing">—</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-label">Ganho</div>
+      <div class="stat-value c-purple" id="stat-earned">R$ 0</div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: INICIO ============ -->
+  <div id="page-home" class="tab-page active">
+    <div class="section-title"><span class="dot"></span>Definir Meta</div>
+    <div class="panel">
+      <input type="number" id="meta-input" placeholder="Valor da sua meta (R$)">
+      <button class="btn-primary" onclick="saveMeta()">Salvar Meta</button>
+    </div>
+
+    <div class="section-title"><span class="dot"></span>Registro Rapido</div>
+    <div class="panel">
+      <select id="quick-job"></select>
+      <input type="number" id="quick-amount" placeholder="Valor recebido (R$)">
+      <input type="text" id="quick-note" placeholder="Observacao (opcional)">
+      <button class="btn-primary" onclick="quickRegister()">Registrar Ganho</button>
+    </div>
+
+    <div class="section-title"><span class="dot"></span>Dinheiro</div>
+    <div class="panel">
+      <input type="number" id="deposit-input" placeholder="Valor para depositar">
+      <button class="btn-secondary" onclick="doDeposit()">Mao -> Banco</button>
+      <hr>
+      <div class="btn-row">
+        <button class="btn-gold" onclick="adjustCash()">Ajustar Mao</button>
+        <button class="btn-secondary" onclick="adjustBank()">Ajustar Banco</button>
+      </div>
+    </div>
+
+    <div class="section-title"><span class="dot"></span>Rotina Sugerida</div>
+    <div class="panel">
+      <div class="routine" id="routine-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: EMPREGOS ============ -->
+  <div id="page-jobs" class="tab-page">
+    <div class="section-title"><span class="dot"></span>Seus Empregos</div>
+    <div class="panel">
+      <div class="job-list" id="job-list"></div>
+    </div>
+    <div class="section-title"><span class="dot"></span>Adicionar Novo Emprego</div>
+    <div class="panel">
+      <input type="text" id="new-job-name" placeholder="Nome do emprego (ex: Pedreiro)">
+      <input type="text" id="new-job-value" placeholder="Valor (ex: R$ 150/dia ou Variavel)">
+      <button class="btn-purple" onclick="addJob()">Adicionar Emprego</button>
+      <div class="hint">Dica: empregos adicionados aparecem no registro rapido automaticamente.</div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: CRONOMETRO ============ -->
+  <div id="page-timer" class="tab-page">
+    <div class="section-title"><span class="dot"></span>Cronometro de Jogo</div>
+    <div class="panel">
+      <div class="timer-display">
+        <div class="timer-time" id="timer-display">00:00:00</div>
+        <div class="timer-label" id="timer-status">Pronto para iniciar</div>
+        <div class="timer-warning" id="timer-warning">
+          ATENCAO: Voce ja jogou 1 HORA! Va trabalhar!
+        </div>
+      </div>
+      <div class="btn-row">
+        <button class="btn-primary" id="timer-start-btn" onclick="startTimer()">Iniciar</button>
+        <button class="btn-secondary" onclick="pauseTimer()">Pausar</button>
+      </div>
+      <button class="btn-danger" onclick="resetTimer()">Zerar Cronometro</button>
+      <div class="hint">
+        Como funciona: clique em INICIAR quando comecar a jogar. O cronometro conta o tempo.
+        Quando completar 1 HORA, o sistema avisa com som e mensagem!
+      </div>
+      <hr>
+      <div class="section-title" style="margin-top:0"><span class="dot"></span>Sessoes de Hoje</div>
+      <div class="history-list" id="sessions-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: REGISTRO ============ -->
+  <div id="page-register" class="tab-page">
+    <div class="section-title"><span class="dot"></span>Registrar por Emprego</div>
+    <div class="panel">
+      <select id="reg-job-select"></select>
+      <input type="number" id="reg-amount" placeholder="Valor recebido (R$)">
+      <input type="text" id="reg-note" placeholder="Observacao (opcional)">
+      <button class="btn-primary" onclick="registerByJob()">Registrar</button>
+    </div>
+    <div class="section-title"><span class="dot"></span>Astronauta (R$ 6.900/h)</div>
+    <div class="panel">
+      <input type="number" step="0.1" id="astro-hours" placeholder="Horas trabalhadas">
+      <button class="btn-primary" onclick="registerAstro()">Calcular e Registrar</button>
+    </div>
+    <div class="section-title"><span class="dot"></span>Mecanico</div>
+    <div class="panel">
+      <div class="btn-row">
+        <button class="btn-primary" onclick="fixedRegister('Mecanico Blindado', 2000)">+R$ 2.000 Blindado</button>
+        <button class="btn-secondary" onclick="fixedRegister('Mecanico Normal', 1000)">+R$ 1.000 Normal</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ TAB: HISTORICO ============ -->
+  <div id="page-history" class="tab-page">
+    <div class="section-title" style="justify-content:space-between">
+      <span style="display:flex;align-items:center;gap:8px"><span class="dot"></span>Historico</span>
+      <button class="btn-danger" style="width:auto;padding:8px 14px;font-size:12px" onclick="clearHistory()">Limpar</button>
+    </div>
+    <div class="history-list" id="history-list"></div>
+  </div>
+</div>
+
+<!-- BOTTOM NAV -->
+<div class="bottom-nav">
+  <div class="nav-inner">
+    <button class="nav-btn active" data-page="home"><span class="ico">🏠</span>Inicio</button>
+    <button class="nav-btn" data-page="jobs"><span class="ico">💼</span>Empregos</button>
+    <button class="nav-btn" data-page="timer"><span class="ico">🎮</span>Jogo</button>
+    <button class="nav-btn" data-page="register"><span class="ico">➕</span>Registrar</button>
+    <button class="nav-btn" data-page="history"><span class="ico">📜</span>Historico</button>
+  </div>
+</div>
+
+<div class="toast" id="toast">Registrado!</div>
+
+<audio id="alarm-sound" preload="auto">
+  <source src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ==" type="audio/wav">
+</audio>
+
+<script>
+var STORAGE_KEY = 'brp_system_v3';
+
+// Default jobs
+var DEFAULT_JOBS = [
+  { name: 'Astronauta', value: 'R$ 6.900/h' },
+  { name: 'SAMU', value: 'Variavel' },
+  { name: 'Mecanico', value: 'R$ 1k / R$ 2k' },
+  { name: 'Lixeiro', value: 'Variavel' },
+  { name: 'Motorista de Jato', value: 'Variavel' },
+  { name: 'Instalador de Internet', value: 'Variavel' },
+  { name: 'DNIT', value: 'Variavel' },
+  { name: 'Outro', value: 'Variavel' }
+];
+
+var DEFAULT_ROUTINE = [
+  { time: '06-07', name: 'Astronauta', pay: 'R$ 6.900/h' },
+  { time: '07-09', name: 'SAMU', pay: 'variavel' },
+  { time: '09-10', name: 'Astronauta', pay: 'R$ 6.900/h' },
+  { time: '10-12', name: 'Mecanico', pay: 'R$ 1k / 2k' },
+  { time: '12-13', name: 'Astronauta', pay: 'R$ 6.900/h' },
+  { time: '13-15', name: 'Lixeiro', pay: 'variavel' },
+  { time: '15-16', name: 'Instalador Net', pay: 'variavel' },
+  { time: '16-18', name: 'SAMU', pay: 'variavel' },
+  { time: '18-19', name: 'Astronauta', pay: 'R$ 6.900/h' },
+  { time: '19-21', name: 'DNIT', pay: 'variavel' },
+  { time: '21-22', name: 'Mecanico', pay: 'R$ 2k blindado' }
+];
+
+var state = {
+  bank: 0, cash: 0, meta: null, earned: 0,
+  history: [], jobs: JSON.parse(JSON.stringify(DEFAULT_JOBS)),
+  timerSeconds: 0, timerRunning: false, timerInterval: null,
+  sessions: [], hourAlerted: false
+};
+
+try {
+  var saved = localStorage.getItem(STORAGE_KEY);
+  if (saved) {
+    var parsed = JSON.parse(saved);
+    for (var k in parsed) { if (parsed.hasOwnProperty(k)) state[k] = parsed[k]; }
+  }
+} catch(e) {}
+
+if (!state.jobs || state.jobs.length === 0) state.jobs = JSON.parse(JSON.stringify(DEFAULT_JOBS));
+if (!state.sessions) state.sessions = [];
+if (typeof state.hourAlerted === 'undefined') state.hourAlerted = false;
+if (typeof state.timerSeconds === 'undefined') state.timerSeconds = 0;
+
+function money(v) {
+  return 'R$ ' + Number(v || 0).toLocaleString('pt-BR', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+}
+
+function save() {
+  try {
+    var toSave = {};
+    for (var k in state) {
+      if (k !== 'timerInterval') toSave[k] = state[k];
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(toSave));
+  } catch(e) {}
+  render();
+}
+
+function toast(msg, isWarn) {
+  var el = document.getElementById('toast');
+  el.textContent = msg;
+  el.className = 'toast show' + (isWarn ? ' warn' : '');
+  setTimeout(function() { el.className = 'toast'; }, 2500);
+}
+
+function total() { return Number(state.bank) + Number(state.cash); }
+
+function addRecord(job, amount, note) {
+  amount = Number(amount);
+  if (!amount || amount <= 0) { toast('Valor invalido!'); return false; }
+  if (!note) note = '';
+  state.cash += amount;
+  state.earned += amount;
+  state.history.unshift({
+    job: job, amount: amount, note: note,
+    date: new Date().toLocaleString('pt-BR')
+  });
+  save();
+  toast('+ ' + money(amount) + ' registrado!');
+  return true;
+}
+
+// ===== META =====
+function saveMeta() {
+  var v = Number(document.getElementById('meta-input').value);
+  if (!v || v <= 0) { toast('Digite um valor valido!'); return; }
+  state.meta = v;
+  document.getElementById('meta-input').value = '';
+  save();
+  toast('Meta definida: ' + money(v));
+}
+
+// ===== REGISTRO RAPIDO =====
+function quickRegister() {
+  var job = document.getElementById('quick-job').value;
+  var amount = document.getElementById('quick-amount').value;
+  var note = document.getElementById('quick-note').value;
+  if (addRecord(job, amount, note)) {
+    document.getElementById('quick-amount').value = '';
+    document.getElementById('quick-note').value = '';
+  }
+}
+
+// ===== REGISTRO POR EMPREGO =====
+function registerByJob() {
+  var job = document.getElementById('reg-job-select').value;
+  var amount = document.getElementById('reg-amount').value;
+  var note = document.getElementById('reg-note').value;
+  if (addRecord(job, amount, note)) {
+    document.getElementById('reg-amount').value = '';
+    document.getElementById('reg-note').value = '';
+  }
+}
+
+// ===== REGISTRO FIXO =====
+function fixedRegister(name, val) { addRecord(name, val, ''); }
+
+// ===== ASTRONAUTA =====
+function registerAstro() {
+  var h = Number(document.getElementById('astro-hours').value);
+  if (!h || h <= 0) { toast('Digite as horas!'); return; }
+  var val = h * 6900;
+  if (addRecord('Astronauta', val, h + ' hora(s)')) {
+    document.getElementById('astro-hours').value = '';
+  }
+}
+
+// ===== DEPOSITO =====
+function doDeposit() {
+  var v = Number(document.getElementById('deposit-input').value);
+  if (!v || v <= 0) { toast('Valor invalido!'); return; }
+  if (v > state.cash) { toast('Sem dinheiro suficiente!'); return; }
+  state.cash -= v; state.bank += v;
+  state.history.unshift({ job: 'Deposito', amount: v, note: 'Mao -> Banco', date: new Date().toLocaleString('pt-BR') });
+  document.getElementById('deposit-input').value = '';
+  save(); toast('Depositado: ' + money(v));
+}
+
+function adjustCash() {
+  var v = prompt('Valor em dinheiro na mao:', state.cash);
+  if (v !== null && !isNaN(v) && Number(v) >= 0) { state.cash = Number(v); save(); toast('Atualizado!'); }
+}
+function adjustBank() {
+  var v = prompt('Saldo do banco:', state.bank);
+  if (v !== null && !isNaN(v) && Number(v) >= 0) { state.bank = Number(v); save(); toast('Atualizado!'); }
+}
+
+// ===== EMPREGOS =====
+function addJob() {
+  var name = document.getElementById('new-job-name').value.trim();
+  var val = document.getElementById('new-job-value').value.trim() || 'Variavel';
+  if (!name) { toast('Digite o nome do emprego!'); return; }
+  state.jobs.push({ name: name, value: val });
+  document.getElementById('new-job-name').value = '';
+  document.getElementById('new-job-value').value = '';
+  save();
+  toast('Emprego "' + name + '" adicionado!');
+}
+
+function removeJob(idx) {
+  if (confirm('Remover o emprego "' + state.jobs[idx].name + '"?')) {
+    state.jobs.splice(idx, 1);
+    save();
+    toast('Emprego removido');
+  }
+}
+
+// ===== CRONOMETRO =====
+function formatTime(sec) {
+  var h = Math.floor(sec / 3600);
+  var m = Math.floor((sec % 3600) / 60);
+  var s = sec % 60;
+  return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m + ':' + (s < 10 ? '0' : '') + s;
+}
+
+function updateTimerDisplay() {
+  document.getElementById('timer-display').textContent = formatTime(state.timerSeconds);
+  var warn = document.getElementById('timer-warning');
+  if (state.timerSeconds >= 3600) {
+    warn.classList.add('show');
+    document.getElementById('timer-status').textContent = 'PASSOU DE 1 HORA!';
+    if (!state.hourAlerted) {
+      state.hourAlerted = true;
+      toast('ATENCAO: 1 HORA DE JOGO!', true);
+      try { playAlarm(); } catch(e) {}
+      save();
+    }
+  } else if (state.timerSeconds >= 1800) {
+    document.getElementById('timer-status').textContent = 'Ja se foram 30 minutos...';
+  } else if (state.timerRunning) {
+    document.getElementById('timer-status').textContent = 'Jogo em andamento...';
+  } else {
+    document.getElementById('timer-status').textContent = 'Pausado';
+  }
+}
+
+function playAlarm() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880;
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    osc.start();
+    setTimeout(function() {
+      osc.frequency.value = 660;
+      setTimeout(function() { osc.stop(); }, 300);
+    }, 300);
+  } catch(e) {}
+}
+
+function startTimer() {
+  if (state.timerRunning) return;
+  state.timerRunning = true;
+  document.getElementById('timer-start-btn').textContent = 'Em andamento...';
+  state.timerInterval = setInterval(function() {
+    state.timerSeconds++;
+    updateTimerDisplay();
+    if (state.timerSeconds % 30 === 0) save();
+  }, 1000);
+  toast('Cronometro iniciado!');
+}
+
+function pauseTimer() {
+  if (!state.timerRunning) return;
+  state.timerRunning = false;
+  clearInterval(state.timerInterval);
+  document.getElementById('timer-start-btn').textContent = 'Continuar';
+  save();
+  toast('Cronometro pausado em ' + formatTime(state.timerSeconds));
+}
+
+function resetTimer() {
+  if (state.timerSeconds > 60) {
+    state.sessions.unshift({
+      duration: state.timerSeconds,
+      date: new Date().toLocaleString('pt-BR')
+    });
+    if (state.sessions.length > 20) state.sessions.pop();
+  }
+  clearInterval(state.timerInterval);
+  state.timerRunning = false;
+  state.timerSeconds = 0;
+  state.hourAlerted = false;
+  document.getElementById('timer-start-btn').textContent = 'Iniciar';
+  document.getElementById('timer-warning').classList.remove('show');
+  save();
+  toast('Cronometro zerado');
+}
+
+// ===== HISTORICO =====
+function clearHistory() {
+  if (confirm('Apagar historico? Saldos nao mudam.')) {
+    state.history = []; state.earned = 0; save();
+  }
+}
+
+// ===== RENDER =====
+function render() {
+  var t = total();
+  var meta = state.meta || 0;
+  var pct = meta > 0 ? Math.min(100, (t / meta) * 100) : 0;
+  var missing = Math.max(0, meta - t);
+
+  document.getElementById('hero-total').textContent = money(t);
+  document.getElementById('hero-title').textContent = meta ? 'Progresso da Meta' : 'Defina sua Meta';
+  document.getElementById('hero-label').textContent = meta ? 'Meta atual' : 'Bem-vindo';
+  document.getElementById('stat-bank').textContent = money(state.bank);
+  document.getElementById('stat-cash').textContent = money(state.cash);
+  document.getElementById('stat-earned').textContent = money(state.earned);
+  document.getElementById('stat-missing').textContent = meta ? money(missing) : '—';
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-pct').textContent = pct.toFixed(1).replace('.', ',') + '%';
+  document.getElementById('meta-info').textContent = meta ? 'Meta: ' + money(meta) : 'Defina abaixo';
+
+  // Job dropdowns
+  var quickSel = document.getElementById('quick-job');
+  var regSel = document.getElementById('reg-job-select');
+  var opts = '';
+  for (var i = 0; i < state.jobs.length; i++) {
+    opts += '<option>' + state.jobs[i].name + '</option>';
+  }
+  quickSel.innerHTML = opts;
+  regSel.innerHTML = opts;
+
+  // Job list
+  var jobHtml = '';
+  for (var j = 0; j < state.jobs.length; j++) {
+    jobHtml += '<div class="job-item">' +
+      '<div><div class="job-item-name">' + state.jobs[j].name + '</div>' +
+      '<div class="job-item-val">' + state.jobs[j].value + '</div></div>' +
+      '<button class="job-del" onclick="removeJob(' + j + ')">X</button>' +
+      '</div>';
+  }
+  document.getElementById('job-list').innerHTML = jobHtml || '<div class="empty">Nenhum emprego.</div>';
+
+  // Routine
+  var routineHtml = '';
+  for (var r = 0; r < DEFAULT_ROUTINE.length; r++) {
+    routineHtml += '<div class="routine-item">' +
+      '<span class="routine-time">' + DEFAULT_ROUTINE[r].time + '</span>' +
+      '<span class="routine-name">' + DEFAULT_ROUTINE[r].name + '</span>' +
+      '<span class="routine-pay">' + DEFAULT_ROUTINE[r].pay + '</span></div>';
+  }
+  document.getElementById('routine-list').innerHTML = routineHtml;
+
+  // History
+  var histHtml = '';
+  if (state.history.length === 0) {
+    histHtml = '<div class="empty">Nenhum registro ainda.</div>';
+  } else {
+    for (var h = 0; h < state.history.length; h++) {
+      var item = state.history[h];
+      histHtml += '<div class="history-item">' +
+        '<div class="history-top"><span class="history-name">' + item.job + '</span>' +
+        '<span class="history-amount">+' + money(item.amount) + '</span></div>' +
+        '<div class="history-meta">' + (item.note || '') + ' • ' + item.date + '</div></div>';
+    }
+  }
+  document.getElementById('history-list').innerHTML = histHtml;
+
+  // Sessions
+  var sessHtml = '';
+  if (state.sessions.length === 0) {
+    sessHtml = '<div class="empty">Nenhuma sessao registrada.</div>';
+  } else {
+    for (var s = 0; s < state.sessions.length; s++) {
+      sessHtml += '<div class="history-item">' +
+        '<div class="history-top"><span class="history-name">Sessao de jogo</span>' +
+        '<span class="history-amount" style="color:var(--purple)">' + formatTime(state.sessions[s].duration) + '</span></div>' +
+        '<div class="history-meta">' + state.sessions[s].date + '</div></div>';
+    }
+  }
+  document.getElementById('sessions-list').innerHTML = sessHtml;
+
+  updateTimerDisplay();
+}
+
+// ===== CLOCK =====
+function tickClock() {
+  document.getElementById('clock').textContent = new Date().toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+}
+tickClock();
+setInterval(tickClock, 1000);
+
+// ===== NAV =====
+var navBtns = document.querySelectorAll('.nav-btn');
+for (var n = 0; n < navBtns.length; n++) {
+  navBtns[n].addEventListener('click', function() {
+    for (var i = 0; i < navBtns.length; i++) navBtns[i].classList.remove('active');
+    this.classList.add('active');
+    var pages = document.querySelectorAll('.tab-page');
+    for (var p = 0; p < pages.length; p++) pages[p].classList.remove('active');
+    document.getElementById('page-' + this.getAttribute('data-page')).classList.add('active');
+  });
+}
+
+// If timer was running, keep it going
+if (state.timerRunning) {
+  state.timerRunning = false;
+  startTimer();
+}
+
+render();
+</script>
+</body>
+</html>
